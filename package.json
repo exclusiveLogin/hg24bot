@@ -1,0 +1,21 @@
+{
+  "name": "hg24bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.3",
+    "express": "^4.16.4",
+    "https-proxy-agent": "^2.2.1",
+    "moment": "^2.24.0",
+    "node-fetch": "^2.3.0",
+    "node-telegram-bot-api": "^0.30.0",
+    "rxjs": "^6.4.0",
+    "telegraf": "^3.27.1"
+  }
+}
