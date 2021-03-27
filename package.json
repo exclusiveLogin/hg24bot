@@ -4,7 +4,14 @@
   "description": "",
   "main": "bot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:local": "nodemon",
+    "deploy": "tsc && pm2 restart ecosystem.config.js",
+    "deploy:local": "tsc && pm2 restart ecosystem.config.js --env local",
+    "deploy:docker": "tsc && pm2-runtime ecosystem.config.js --env local",
+    "docker:build": "npm i && tsc && sudo docker build -t exclusivelogin/hellgame24-bot .",
+    "docker:publish": "npm run docker:build && sudo docker login && sudo docker push exclusivelogin/hellgame24-bot",
+    "docker:run": "sudo docker pull exclusivelogin/hellgame24-bot && sudo docker run --rm -d -p 8091:3000 exclusivelogin/hellgame24-bot"
   },
   "author": "",
   "license": "ISC",
@@ -17,5 +24,13 @@
     "node-telegram-bot-api": "^0.30.0",
     "rxjs": "^6.4.0",
     "telegraf": "^3.27.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.20",
+    "cross-env": "^7.0.3",
+    "nodemon": "^2.0.7",
+    "pm2": "^4.5.5",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3"
   }
 }

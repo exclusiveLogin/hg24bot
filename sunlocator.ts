@@ -1,6 +1,6 @@
-const fetch = require('node-fetch');
-const moment = require('moment');
-const rx = require('rxjs');
+import fetch from 'node-fetch';
+import moment from 'moment';
+import { BehaviorSubject } from 'rxjs';
 
 // syzran
 const lat = 53.148212;
@@ -8,41 +8,47 @@ const lng = 48.454170;
 
 class SunLocator{
 
-    constructor( interval, upd ){
-        this.raw = null;
-        this.lastupdate = null;
+    raw = null;
+    lastupdate = null;
 
+    timer: NodeJS.Timeout;
+    timerupd: NodeJS.Timeout;
+
+    interval = 10000;
+    intervalUpdate = 3600000;
+    // this.onceFetch = true;
+    stream$ = new BehaviorSubject(null);
+
+    // Current state
+    currentState;
+    currentStateTitle;
+    currentStateDescription;
+
+    // Prev state
+    prevState;
+    prevStateTitle;
+    prevStateDescription;
+
+    // DAY PARTS FLAGS
+    nightFlag;
+    blueHourMFlag;
+    goldHourMFlag;
+    dayFlag;
+    goldHourEFlag;
+    blueHourEFlag;
+
+    // DAY MAP
+    nightTime;
+    blueHourMTime;
+    goldHourMTime;
+    dayTime;
+    goldHourETime;
+    blueHourETime;
+    blueHourMTimeNext;
+
+    constructor( interval, upd ){
         this.interval = interval || 10000;
         this.intervalUpdate = upd || 3600000;
-        // this.onceFetch = true;
-        this.stream$ = new rx.BehaviorSubject(null);
-
-        // Current state
-        this.currentState = null;
-        this.currentStateTitle = null;
-        this.currentStateDescription = null;
-
-        // Prev state
-        this.prevState = null;
-        this.prevStateTitle = null;
-        this.prevStateDescription = null;
-
-        // DAY PARTS FLAGS
-        this.nightFlag;
-        this.blueHourMFlag;
-        this.goldHourMFlag;
-        this.dayFlag;
-        this.goldHourEFlag;
-        this.blueHourEFlag;
-
-        // DAY MAP
-        this.nightTime;
-        this.blueHourMTime;
-        this.goldHourMTime;
-        this.dayTime;
-        this.goldHourETime;
-        this.blueHourETime;
-        this.blueHourMTimeNext;
     }
 
     start(){
@@ -175,7 +181,7 @@ class SunLocator{
         }
 
         if( this.currentState !== this.prevState ){
-            let data = {};
+            let data: {[key: string]: any} = {};
             data.state = this.currentState;
             data.title = this.currentStateTitle;
             data.description = this.currentStateDescription;
@@ -200,7 +206,6 @@ class SunLocator{
         .then( response => !!response && response.json())
         .then( json => {
           console.log('fetched data complete');
-          this.onceFetch = false;
           if( !!json && json.results ) this.remapTime( json.results );
         } )
         .catch( error => {

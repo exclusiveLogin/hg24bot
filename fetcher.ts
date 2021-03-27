@@ -1,13 +1,18 @@
-const fetch = require('node-fetch');
-const rx = require('rxjs');
+import fetch from 'node-fetch';
+import { BehaviorSubject } from 'rxjs';
 
 class EventFetcher{
-
+    url: string;
+    interval: number;
+    level: string;
+    stream$ = new BehaviorSubject([]);
+    timer: NodeJS.Timeout;
+    lastId: number;
+    
     constructor(url, interval = 5000, level = 'global'){
         this.url = url;
         this.interval = interval;
         this.level = level;
-        this.stream$ = new rx.BehaviorSubject([]);
         this.init();
     }
 
@@ -28,12 +33,14 @@ class EventFetcher{
     }
 
     init(){
-        let path = this.url+'/backend/events/events_handler.php?mode=get_last_event';
+        let path = this.url+'/hgapi/events/events_handler.php?mode=get_last_event';
 
         fetch( path ,{ method:'get'}).then( result => {
             if(result.ok) return result.json();
         }).then(json => {
+            console.log('fetched last event:', json);
             this.lastId = json && json.length && json[0].id;
+            console.log('last event id:', this.lastId);
             this.start();
         }).catch(e=>{
             console.error(e);
@@ -42,10 +49,10 @@ class EventFetcher{
     }
 
     update(){
-
+        console.log('Update events from last id:', this.lastId);
         if( !this.lastId ) return;
 
-        let path = this.url+'/backend/events/events_handler.php?mode=get_new_events&id='+this.lastId;
+        let path = this.url+'/hgapi/events/events_handler.php?mode=get_new_events&id='+this.lastId;
 
         fetch( path ,{ method:'get'}).then( result => {
             if(result.ok) return result.json();

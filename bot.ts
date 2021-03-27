@@ -3,9 +3,9 @@ const HttpsProxyAgent = require('https-proxy-agent');
 const fe = require('./fetcher');
 const sun = require('./sunlocator');
 const w = require('./weather');
-const fetch = require('node-fetch');
-const moment = require('moment');
-
+import fetch from 'node-fetch';
+import moment from 'moment';
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
 
 let token = '776154170:AAELvoF6Tro_C2PMpSfAYit3j0VrZO1-47A';
@@ -16,7 +16,7 @@ let hgChatId = -395832167;
 let version = '0.2.1';
 const bot = new Telegraf(token, {
     telegram: {
-        agent: new HttpsProxyAgent({port: '3128', host: '148.217.94.54'})
+        // agent: new HttpsProxyAgent({port: '3128', host: '148.217.94.54'})
     }
 });
 
@@ -117,13 +117,13 @@ ${sunState.description}`;
           segment: 'global',
       }
 
-      fetch('https://hellgame24.ru/backend/state/state_handler.php', {
+      fetch('https://hellgame24.ru/hgapi/state/state_handler.php', {
           method: 'POST',
           body:    JSON.stringify(body_state),
           headers: { 'Content-Type': 'application/json' },
       }).then(r => r.text()).then(json=>console.log('result: ', json)).catch(err => console.error(err));
 
-      fetch('https://hellgame24.ru/backend/segment/segment_state.php', {
+      fetch('https://hellgame24.ru/hgapi/segment/segment_state.php', {
           method: 'POST',
           body:    JSON.stringify(body_segment),
           headers: { 'Content-Type': 'application/json' },
