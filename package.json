@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/node-fetch": "^2.5.8",
     "bluebird": "^3.5.3",
     "express": "^4.16.4",
     "https-proxy-agent": "^2.2.1",

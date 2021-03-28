@@ -6,7 +6,7 @@ import { BehaviorSubject } from 'rxjs';
 const lat = 53.148212;
 const lng = 48.454170;
 
-class YandexWeather {
+export class YandexWeather {
 
   raw: any;
   lastupdate: Moment;
@@ -23,8 +23,8 @@ class YandexWeather {
   currentStateTitle: string;
   currentStateDescription: string;
 
-  constructor(interval) {
-    this.interval = interval || 3600000;
+  constructor(interval = 3600000) {
+    this.interval = interval;
   }
 
   start() {
@@ -103,6 +103,37 @@ class YandexWeather {
     return [lat, lng];
   }
 
+  geoJSONPointsGenerator(coordinates: [number, number][]): string {
+    const pattern = {
+      type: "FeatureCollection",
+      features: []
+    }
+
+    const featurePattern = {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": null
+      },
+      "properties": null,
+
+    }
+
+    const prop = {
+      "marker-size": "medium",
+      "marker-symbol": "danger",
+      "marker-color": "#F00"
+    }
+
+    pattern.features = coordinates.map(c => {
+      featurePattern.geometry.coordinates = c;
+      featurePattern.properties = prop;
+      return JSON.parse(JSON.stringify(featurePattern));
+    })
+
+    return encodeURIComponent(JSON.stringify(pattern))
+  }
+
   getAddressMapString(position) {
 
     if (!(position && position.length > 1)) return;
@@ -115,6 +146,10 @@ class YandexWeather {
     return position && position.length > 1 ? 
     `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/pin-l-danger+900(${position[1] + ',' + position[0]})/${position[1] + ',' + position[0]},13/800x600?access_token=${this.mapbox_token}` : 
     null;
+  }
+
+  getSummaryUnitsMapImgURL(geojson): string {
+    return `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/geojson(${geojson})/${lng + ',' + lat},10/1000x1000?access_token=${this.mapbox_token}`;
   }
 
   calcCurrentState(condition) {
@@ -148,6 +183,7 @@ class YandexWeather {
     if (this.currentState === 'clear') {
       this.currentStateTitle = "Ясно";
       this.currentStateDescription = "Все спауны чистые, блуждающие уничтожены";
+      this.removeAllUnits();
     }
 
     if (this.currentState === 'partly-cloudy') {
@@ -261,6 +297,8 @@ class YandexWeather {
       data.img = data.position ? posImg : null;
       this.stream$.next(data);
       this.prevState = this.currentState;
+
+      this.addUnitData(randomPos[0], randomPos[1]);
     }
 
   }
@@ -270,9 +308,7 @@ class YandexWeather {
   }
 
   fetchData() {
-    let h = new fetch.Headers();
-    h.append(this.tokenName, this.token);
-    fetch(`https://api.weather.yandex.ru/v1/informers?lat=${lat}&lon=${lng}`, { headers: h })
+    fetch(`https://api.weather.yandex.ru/v1/informers?lat=${lat}&lon=${lng}`, { headers: {[this.tokenName]: this.token} })
       .then(response => !!response && response.json())
       .then(json => !!json && this.remapData(json))
       .catch(error => {
@@ -280,6 +316,47 @@ class YandexWeather {
         setTimeout(() => this.fetchData(), 30000);
       });
   }
-}
 
-module.exports = YandexWeather;
+  addUnitData(lat: number, lon: number) {
+    const body = {
+      mode: "add_unit",
+      name: "blinker",
+      description: "Рандомный дух",
+      lat: lat.toString(),
+      lng: lon.toString(),
+    };
+  
+    console.log('add json:', body);
+    fetch(`https://hellgame24.ru/hgapi/units/units_handler.php`, { method: 'POST', body: JSON.stringify(body) })
+      .then(response => !!response && response.json())
+      .then(json => console.log('AddUnit Result:', json))
+      .catch(error => console.log('addUnitData error: ', error));
+  }
+
+  removeAllUnits(){
+    const body = {
+      operation: 'remove_all'
+    };
+    fetch(`https://hellgame24.ru/hgapi/units/units_handler.php`, { method: 'POST', body: JSON.stringify(body) })
+      .then(response => !!response && response.json())
+      .then(json => console.log('removeAllUnits Result:', json))
+      .catch(error => console.log('removeAllUnits error: ', error));
+  }
+
+  getAllUnits(): Promise<string> {
+    return fetch(`https://hellgame24.ru/hgapi/units/units_handler.php?mode=get_all_units`)
+      .then(response => response ? response.json() : [])
+      .then(json => {
+        console.log('active Units Result:', json);
+
+        json = (json as {lat: string, lng: string}[]).filter(unit => unit.lat && unit.lng).map(unit => ([+unit.lng, +unit.lat]));
+
+        return this.getSummaryUnitsMapImgURL(this.geoJSONPointsGenerator(json)); 
+      })
+      .catch(error => {
+          console.log('getAllUnits error: ', error);
+          return error;
+      });
+  }
+
+}

@@ -2,9 +2,10 @@ const Telegraf = require('telegraf');
 const HttpsProxyAgent = require('https-proxy-agent');
 const fe = require('./fetcher');
 const sun = require('./sunlocator');
-const w = require('./weather');
+import { YandexWeather } from './weather';
 import fetch from 'node-fetch';
 import moment from 'moment';
+import { from } from 'rxjs';
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
 
@@ -20,12 +21,29 @@ const bot = new Telegraf(token, {
     }
 });
 
+let sunLocator = new sun();
+sunLocator.start();
+
+let weather = new YandexWeather();
+weather.start();
+
+
 bot.command('echo', (ctx)=>ctx.reply(ctx.message.text));
 
 bot.hears('check', (ctx, next)=>{
     console.log('check fe:', fetcher);
     ctx.reply('Проверка сервиса version: ' + version + ' последняя запись в event log id: ' + fetcher.lastId + ' интервал опроса HG24: ' + fetcher.interval + 'ms');
     setTimeout(() => ctx.reply('Системное время сервера: ' + moment().format('DD:MM:YYYY HH:mm:ss') ), 3000);
+    next();
+});
+
+bot.hears('map', (ctx, next)=>{
+    console.log('check map...');
+
+    weather.getAllUnits().then(str => {
+        ctx.reply('Актуальная карта опасных феноменов Hellgame: ' + str);
+    });
+    
     next();
 });
 
@@ -83,8 +101,6 @@ ${ev.description}`;
     });
 });
 
-let sunLocator = new sun();
-sunLocator.start();
 sunLocator.getStream().subscribe( sunState => {
 
     if( sunState ){
@@ -132,8 +148,6 @@ ${sunState.description}`;
     console.log('SUN State: ', sunState);
 });
 
-let weather = new w();
-weather.start();
 weather.getStream().subscribe( weatherResult => {
   if( weatherResult && weatherResult.state ){
 
@@ -166,6 +180,8 @@ ${weatherResult.description}`;
       ${ weatherResult.img ? weatherResult.img : '' }
 
       Открыть на карте: ${ weatherResult.position ? weatherResult.position : '' }` : msg;
+
+      if (weatherResult.position) weather.getAllUnits().then(msg => bot.telegram.sendMessage(hgChatId, 'Актуальная карта опасных явлений HG24: ' + msg));
 
     bot.telegram.sendMessage(hgChatId, msg,
     {parse_mode:"HTML"});

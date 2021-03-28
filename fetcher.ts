@@ -49,7 +49,7 @@ class EventFetcher{
     }
 
     update(){
-        console.log('Update events from last id:', this.lastId);
+        
         if( !this.lastId ) return;
 
         let path = this.url+'/hgapi/events/events_handler.php?mode=get_new_events&id='+this.lastId;
@@ -57,11 +57,14 @@ class EventFetcher{
         fetch( path ,{ method:'get'}).then( result => {
             if(result.ok) return result.json();
         }).then(json => {
-
+                        
             let last = json && json.slice(-1);
             let newId = last && !!last.length && last[0].id;
 
-            if(newId) this.lastId = newId;
+            if(newId) {
+                this.lastId = newId;
+                console.log('New event id:', newId);
+            }
 
             this.stream$.next( json );
         }).catch(e=> {
