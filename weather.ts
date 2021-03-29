@@ -295,6 +295,7 @@ export class YandexWeather {
       data.description = this.currentStateDescription;
       data.position = newSpawn ? newSpawn : null;
       data.img = data.position ? posImg : null;
+      data.coordinates = randomPos;
       this.stream$.next(data);
       this.prevState = this.currentState;
 
@@ -347,7 +348,7 @@ export class YandexWeather {
     return fetch(`https://hellgame24.ru/hgapi/units/units_handler.php?mode=get_all_units`)
       .then(response => response ? response.json() : [])
       .then(json => {
-        console.log('active Units Result:', json);
+        // console.log('active Units Result:', json);
 
         json = (json as {lat: string, lng: string}[]).filter(unit => unit.lat && unit.lng).map(unit => ([+unit.lng, +unit.lat]));
 
