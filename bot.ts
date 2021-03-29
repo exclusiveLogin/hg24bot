@@ -234,13 +234,8 @@ function sendPhoto(url: string): Promise<any> {
     else return Promise.resolve();
 }
 
-
 process.on('SIGINT', ()=>{
     sendMessage('Сервис бота остановлен SIGINT').then(() => console.log('Сервис бота остановлен SIGINT')).catch(() => null).finally(()=>process.exit(2));
-});
-
-process.on('SIGKILL', ()=>{
-    sendMessage('Сервис бота остановлен SIGKILL').then(() => console.log('Сервис бота остановлен SIGINT')).catch(() => null).finally(()=>process.exit(9));
 });
 
 process.on('SIGTERM', ()=>{
