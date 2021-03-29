@@ -234,12 +234,30 @@ function sendPhoto(url: string): Promise<any> {
     else return Promise.resolve();
 }
 
+process.on('message', (msg) => {
+    if (msg == 'shutdown') {
+        console.log('Exiting...');
+        setTimeout(function() {
+            console.log('Finished exit app bot');
+            process.exit(0);
+        }, 1500);
+    }
+});
 process.on('SIGINT', ()=>{
-    sendMessage('Сервис бота остановлен SIGINT').then(() => console.log('Сервис бота остановлен SIGINT')).catch(() => null).finally(()=>process.exit(2));
+    sendMessage('Сервис бота остановлен SIGINT')
+        .then((data) => {
+            console.log('Сервис бота остановлен SIGINT', data);
+            process.exit(0);
+        })
+        .catch((data) => console.log('Сервис бота остановлен SIGINT', data));
 });
 
 process.on('SIGTERM', ()=>{
-    sendMessage('Сервис бота остановлен SIGTERM').then(() => console.log('Сервис бота остановлен SIGTERM')).catch(() => null).finally(()=>process.exit(15));
+    sendMessage('Сервис бота остановлен SIGTERM').then((data) => {
+        console.log('Сервис бота остановлен SIGTERM', data);
+        process.exit(0);
+    })
+        .catch((data) => console.log('Сервис бота остановлен SIGTERM', data));
 });
 
 registrator.start().then(() => initHandlers());
