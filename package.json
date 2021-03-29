@@ -9,9 +9,9 @@
     "deploy": "tsc && pm2 restart ecosystem.config.js",
     "deploy:local": "tsc && pm2 restart ecosystem.config.js --env local",
     "deploy:docker": "tsc && pm2-runtime ecosystem.config.js --env local",
-    "docker:build": "npm i && tsc && sudo docker build -t exclusivelogin/hellgame24-bot .",
-    "docker:publish": "npm run docker:build && sudo docker login && sudo docker push exclusivelogin/hellgame24-bot",
-    "docker:run": "sudo docker pull exclusivelogin/hellgame24-bot && sudo docker run --rm -d -p 8091:3000 exclusivelogin/hellgame24-bot"
+    "docker:build": "npm i && tsc && docker build -t exclusivelogin/hellgame24-bot .",
+    "docker:publish": "npm run docker:build && docker login && docker push exclusivelogin/hellgame24-bot",
+    "docker:run": "docker pull exclusivelogin/hellgame24-bot && docker run --rm -d exclusivelogin/hellgame24-bot"
   },
   "author": "",
   "license": "ISC",
