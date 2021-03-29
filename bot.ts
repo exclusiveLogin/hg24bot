@@ -236,11 +236,15 @@ function sendPhoto(url: string): Promise<any> {
 
 
 process.on('SIGINT', ()=>{
-    sendMessage('Сервис бота остановлен').then(() => console.log('Сервис бота остановлен SIGINT')).catch(() => null).finally(()=>process.exit(2));
+    sendMessage('Сервис бота остановлен SIGINT').then(() => console.log('Сервис бота остановлен SIGINT')).catch(() => null).finally(()=>process.exit(2));
+});
+
+process.on('SIGKILL', ()=>{
+    sendMessage('Сервис бота остановлен SIGKILL').then(() => console.log('Сервис бота остановлен SIGINT')).catch(() => null).finally(()=>process.exit(9));
 });
 
 process.on('SIGTERM', ()=>{
-    sendMessage('Сервис бота остановлен').then(() => console.log('Сервис бота остановлен SIGTERM')).catch(() => null).finally(()=>process.exit(15));
+    sendMessage('Сервис бота остановлен SIGTERM').then(() => console.log('Сервис бота остановлен SIGTERM')).catch(() => null).finally(()=>process.exit(15));
 });
 
 registrator.start().then(() => initHandlers());
