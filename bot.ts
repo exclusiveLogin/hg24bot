@@ -6,6 +6,7 @@ import fetch from 'node-fetch';
 import moment from 'moment';
 import {Registrator} from "./registrator";
 import { UXEvent } from './fetcher';
+import { UnitController } from './unit';
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
 
@@ -65,7 +66,7 @@ bot.hears('check', (ctx) => {
 bot.hears('map', (ctx) => {
     console.log('check map...');
 
-    weather.getAllUnits().then(str => {
+    UnitController.getAllUnits().then(str => {
         ctx.replyWithPhoto(str, { reply_to_message_id: ctx.message.message_id} );
     });
 });
@@ -148,13 +149,24 @@ function initHandlers(): void {
             icon = !!sunState.state && !!~sunState.state.search('error') ? '‼️' : icon;
             icon = !!sunState.state && !!~sunState.state.search('update') ? '🔄' : icon;
 
-            setTimeout(() => {
-                let msg = 
-                `Внимание ${icon ? icon : ''} <b>( ${ sunState.state } )</b> <strong>${sunState.title}</strong>
-                ${sunState.description}`;
+        
+            let msg = `Внимание ${icon ? icon : ''} <b>( ${ sunState.state } )</b> <strong>${sunState.title}</strong>${sunState.description}`;
 
-                sendMessage( msg ).then(() => null).catch(() => null);
-            }, 2000);
+            sendMessage( msg );
+        
+            sunState.units.forEach((unit, idx) => {
+                let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}`;
+                setTimeout(() => sendMessage(msg), (idx * 1000));
+                setTimeout(() => sendMessage(unit.getAddressMapString()), (idx * 1000));
+                setTimeout(() => sendPhoto(unit.getPositionImg()), (idx * 1000));
+            });
+
+            if(sunState.units.length){
+                setTimeout(() => {
+                    sendMessage('Взгляните на обновленную карту HG24');
+                    UnitController.getAllUnits().then(url => sendPhoto(url));
+                },10000)
+            }
 
             const body_state = {
                 mode:'add_state',
@@ -180,6 +192,8 @@ function initHandlers(): void {
             }).then(r => r.text()).then(json=>console.log('result: ', json)).catch(err => console.error(err))
         }
         console.log('SUN State: ', sunState);
+
+
     });
 
     weather.getStream().subscribe( weatherResult => {
@@ -206,22 +220,25 @@ function initHandlers(): void {
 
             setTimeout(() => {
                 let msg = `Погода изменилась ${ icon ? icon : ''} <b>( ${ weatherResult.state } )</b>
-<strong>${weatherResult.title}</strong>
-${weatherResult.description}`;
+                            <strong>${weatherResult.title}</strong>
+                            ${weatherResult.description}`;
 
-                msg = weatherResult.position ? msg + `
-      Новый спаун в точке:
-      ${ weatherResult.coordinates ? weatherResult.coordinates.toString() : '' }
-
-      Открыть на карте: ${ weatherResult.position ? weatherResult.position : '' }` : msg;
-
-                if (weatherResult.position) weather.getAllUnits().then(msg => {
-                    sendMessage('Взгляните на обновленную карту HG24').then(() => null).catch(() => null);
-                    sendPhoto(msg).then(() => null).catch(() => null);
+                weatherResult.units.forEach((unit, idx) => {
+                    let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}`;
+                    setTimeout(() => sendMessage(msg), (idx * 1000));
+                    setTimeout(() => sendMessage(unit.getAddressMapString()), (idx * 1000));
+                    setTimeout(() => sendPhoto(unit.getPositionImg()), (idx * 1000));
                 });
 
-                sendMessage(msg).then(() => null).catch(() => null);
+                sendMessage(msg);
             }, 2000);
+
+            if(weatherResult.units.length){
+                setTimeout(() => {
+                    sendMessage('Взгляните на обновленную карту HG24');
+                    UnitController.getAllUnits().then(url => sendPhoto(url));
+                },10000)
+            }
         }
 
     });

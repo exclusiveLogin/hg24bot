@@ -1,7 +1,14 @@
 import fetch from 'node-fetch';
 import moment from 'moment';
 import { BehaviorSubject } from 'rxjs';
+import { Unit, UnitController } from './unit';
 
+export interface SunData{
+    state: string;
+    title: string;
+    description: string;
+    units: Unit[];
+}
 // syzran
 const lat = 53.148212;
 const lng = 48.454170;
@@ -16,8 +23,9 @@ class SunLocator{
 
     interval = 10000;
     intervalUpdate = 3600000;
+    lock = true;
     // this.onceFetch = true;
-    stream$ = new BehaviorSubject(null);
+    stream$ = new BehaviorSubject<SunData>(null);
 
     // Current state
     currentState;
@@ -52,6 +60,9 @@ class SunLocator{
     }
 
     start(){
+
+        setTimeout(() => this.lock = false, 60000);
+
         this.fetchSunData();
         if( this.timer ){
             clearInterval(this.timer);
@@ -138,22 +149,27 @@ class SunLocator{
         this.goldHourEFlag = currentTime.isBetween( this.goldHourETime, this.blueHourETime );
         this.blueHourEFlag = currentTime.isBetween( this.blueHourETime, this.nightTime );
 
+        let newSpawnCountBlinker = 0;
+
         if( this.nightFlag ) {
             this.currentState = 'night';
             this.currentStateTitle = "Ночь";
             this.currentStateDescription = "Время темных сил";
+            newSpawnCountBlinker = 3;
         }
 
         if( this.blueHourMFlag ) {
             this.currentState = 'blue_m';
             this.currentStateTitle = "Утренний синий час";
             this.currentStateDescription = "Время последнего прорыва ВМ";
+            newSpawnCountBlinker = 2
         }
 
         if( this.blueHourEFlag ) {
             this.currentState = 'blue_e';
             this.currentStateTitle = "Вечерний синий час";
             this.currentStateDescription = "Время прихода ВМ";
+            newSpawnCountBlinker = 2;
         }
 
         if( this.dayFlag ) {
@@ -166,12 +182,14 @@ class SunLocator{
             this.currentState = 'gold_m';
             this.currentStateTitle = "Утренний золотой час";
             this.currentStateDescription = "Время последнего прорыва НМ";
+            newSpawnCountBlinker = 1;
         }
 
         if( this.goldHourEFlag ) {
             this.currentState = 'gold_e';
             this.currentStateTitle = "Вечерний золотой час";
             this.currentStateDescription = "Время прихода НМ";
+            newSpawnCountBlinker = 1;
         }
 
         if( !(this.nightFlag || this.blueHourMFlag || this.blueHourEFlag || this.dayFlag || this.goldHourMFlag || this.goldHourEFlag)){
@@ -181,10 +199,23 @@ class SunLocator{
         }
 
         if( this.currentState !== this.prevState ){
-            let data: {[key: string]: any} = {};
-            data.state = this.currentState;
-            data.title = this.currentStateTitle;
-            data.description = this.currentStateDescription;
+
+            if (this.currentState === 'day' && !this.lock) {
+                UnitController.removeAllUnits();
+            }
+
+            let data: SunData = {
+                state: this.currentState,
+                title: this.currentStateTitle,
+                description: this.currentStateDescription,
+                units: [],
+            };
+            
+            if (newSpawnCountBlinker) {
+                for(let i = 0; i < newSpawnCountBlinker; i++){
+                  data.units.push(UnitController.createRandomUnit());
+                }
+              }
 
             this.stream$.next( data );
 
@@ -212,7 +243,7 @@ class SunLocator{
             console.log('sunrise error: ', error);
             //при ошибке делаем попытку через 30 сек
             setTimeout(() => this.fetchSunData(), 30000);
-            this.stream$.next({state: 'error', title: 'Обновление данных о солнце', description: 'Системное обновление завершено c ошибкой:' + JSON.stringify( error )});
+            this.stream$.next({state: 'error', title: 'Обновление данных о солнце', description: 'Системное обновление завершено c ошибкой:' + JSON.stringify( error ), units: []});
         });
     }
 }
