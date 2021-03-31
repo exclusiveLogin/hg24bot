@@ -5,6 +5,7 @@ import { YandexWeather } from './weather';
 import fetch from 'node-fetch';
 import moment from 'moment';
 import {Registrator} from "./registrator";
+import { UXEvent } from './fetcher';
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
 
@@ -36,13 +37,13 @@ registrator.getStream().subscribe(chats => {
 // запускаем fetcher событий на hg24
 let fetcher = new fe('http://hellgame24.ru');
 
-bot.on('message', (ctx, next) => {
-    console.log('message...:', ctx.message.message_id, ' from: ', ctx.message.from.username, ' - ', ctx.update.message['text'] );
-    console.log('chat:', ctx.message.chat.id);
-    // echo mode
-    // ctx.reply(ctx.message['text']);
-    next();
-});
+// bot.on('message', (ctx, next) => {
+//     console.log('message...:', ctx.message.message_id, ' from: ', ctx.message.from.username, ' - ', ctx.update.message['text'] );
+//     console.log('chat:', ctx.message.chat.id);
+//     // echo mode
+//     // ctx.reply(ctx.message['text']);
+//     next();
+// });
 
 bot.command('echo', (ctx) => {
     ctx.reply(ctx.message.text);
@@ -120,11 +121,16 @@ function initHandlers(): void {
     sendMessage('Сервис бота успешно запущен').then(() => null).catch(() => null) ;
 
 
-    fetcher.getStream().subscribe( events => {
-        if( events && events.length ) events.forEach((ev, idx) => {
-            let msg = `Событие ${ ev.level === 'info' ? 'ℹ️' : ''}${ ev.level === 'warning' ? '⚠️' : ''}${ ev.level === 'danger' ? '‼️' : ''} <b>( ${ev.level} )</b>
-<strong>${ev.title}</strong>
-${ev.description}`;
+    fetcher.getStream().subscribe( (events: UXEvent[]) => {
+        if( events && events.length ) events.filter(e => e.telegram_notify).forEach((ev, idx) => {
+            let msg = 
+                    `Событие 
+                    ${ ev.level === 'info' ? 'ℹ️' : ''}
+                    ${ ev.level === 'warning' ? '⚠️' : ''}
+                    ${ ev.level === 'danger' ? '‼️' : ''} <b>( ${ev.level} )</b>
+                    <strong>${ev.title}</strong>
+                    ${ev.description}`;
+
             setTimeout(() => sendMessage(msg).then(() => null).catch(() => null), 2000 * idx);
         });
     });
@@ -143,9 +149,9 @@ ${ev.description}`;
             icon = !!sunState.state && !!~sunState.state.search('update') ? '🔄' : icon;
 
             setTimeout(() => {
-                let msg = `Внимание ${icon ? icon : ''} <b>( ${ sunState.state } )</b>
-<strong>${sunState.title}</strong>
-${sunState.description}`;
+                let msg = 
+                `Внимание ${icon ? icon : ''} <b>( ${ sunState.state } )</b> <strong>${sunState.title}</strong>
+                ${sunState.description}`;
 
                 sendMessage( msg ).then(() => null).catch(() => null);
             }, 2000);

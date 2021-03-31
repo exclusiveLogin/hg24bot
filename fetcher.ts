@@ -1,11 +1,67 @@
 import fetch from 'node-fetch';
 import { BehaviorSubject } from 'rxjs';
 
+export interface UXEventResponse {
+    id: string;
+    title: string;
+    description: string;
+    level: string;
+    author: string;
+    segment: string;
+    desktop_notify: string;
+    push_notify: string;
+    telegram_notify: string;
+    img: string;
+    datetime: string;
+}
+
+export interface IUXEvent {
+    id: number;
+    title: string;
+    description: string;
+    level: string;
+    author: string;
+    segment: string;
+    desktop_notify: boolean;
+    push_notify: boolean;
+    telegram_notify: boolean;
+    img: string;
+    datetime: string;
+}
+
+export class UXEvent implements IUXEvent {
+    id: number;
+    title: string;
+    description: string;
+    level: string;
+    author: string;
+    segment: string;
+    desktop_notify: boolean;
+    push_notify: boolean;
+    telegram_notify: boolean;
+    img: string;
+    datetime: string;
+
+    constructor(json: UXEventResponse){
+        this.id = +json.id;
+        this.title = json.title;
+        this.description = json.description;
+        this.level = json.level;
+        this.author = json.author;
+        this.segment = json.segment;
+        this.desktop_notify = !!json.desktop_notify;
+        this.push_notify = !!json.push_notify;
+        this.telegram_notify = !!json.telegram_notify;
+        this.img = json.img;
+        this.datetime = json.datetime;
+    }
+}
+
 class EventFetcher{
     url: string;
     interval: number;
     level: string;
-    stream$ = new BehaviorSubject([]);
+    stream$ = new BehaviorSubject<UXEvent[]>([]);
     timer: NodeJS.Timeout;
     lastId: number;
     
