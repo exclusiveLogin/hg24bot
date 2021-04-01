@@ -1,4 +1,4 @@
-const Telegraf = require('telegraf');
+import * as Telegraf from 'telegraf';
 const fe = require('./fetcher');
 const sun = require('./sunlocator');
 import { YandexWeather } from './weather';
@@ -20,7 +20,7 @@ let botActiveChats: number[] = [];
 //let hgChatId = 474062218;
 
 let version = '0.4.0';
-const bot = new Telegraf(token);
+const bot = new Telegraf.Telegraf(token);
 
 // запускаем бот астро трекинга
 const sunLocator = new sun();
@@ -66,9 +66,7 @@ bot.hears('check', (ctx) => {
 bot.hears('map', (ctx) => {
     console.log('check map...');
 
-    UnitController.getAllUnits().then(str => {
-        ctx.replyWithPhoto(str, { reply_to_message_id: ctx.message.message_id} );
-    });
+    UnitController.getAllUnits().then(str => str ? ctx.replyWithPhoto(str, { reply_to_message_id: ctx.message.message_id} ) : sendMessage('Слишком много монстров, чтобы посмотреть карту посетите сайт игры'));
 });
 
 bot.hears('sun', (ctx) => {
@@ -150,21 +148,26 @@ function initHandlers(): void {
             icon = !!sunState.state && !!~sunState.state.search('update') ? '🔄' : icon;
 
         
-            let msg = `Внимание ${icon ? icon : ''} <b>( ${ sunState.state } )</b> <strong>${sunState.title}</strong>${sunState.description}`;
+            let msg = `Внимание ${icon ? icon : ''}
+<b>( ${ sunState.state } )</b>
+<b>${sunState.title}</b>
+<b>${sunState.description}</b>`;
 
             sendMessage( msg );
         
             sunState.units.forEach((unit, idx) => {
-                let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}<p>${unit.title}</p><p>${unit.description}</p>`;
+                let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}
+<b>${unit.title}</b>
+<b>${unit.description}</b>`;
                 setTimeout(() => sendMessage(msg), (idx * 1000));
                 // setTimeout(() => sendMessage(unit.getAddressMapString()), (idx * 1000));
-                // setTimeout(() => sendPhoto(unit.getPositionImg()), (idx * 1000));
+                setTimeout(() => sendPhoto(unit.getPositionImg()), (idx * 1000));
             });
 
             if(sunState.units.length){
                 setTimeout(() => {
                     sendMessage('Взгляните на обновленную карту HG24');
-                    UnitController.getAllUnits().then(url => sendPhoto(url));
+                    UnitController.getAllUnits().then(url => url ? sendPhoto(url) : sendMessage('Слишком много монстров, чтобы посмотреть карту посетите сайт игры'));
                 },10000)
             }
 
@@ -219,15 +222,18 @@ function initHandlers(): void {
             //console.log('icon:', icon, weatherResult.state);
 
             setTimeout(() => {
-                let msg = weatherResult.state ? `Погода изменилась ${ icon ? icon : ''} <b>( ${ weatherResult.state } )</b>
-<strong>${weatherResult.title}</strong>
-<p>${weatherResult.description}</p>`: null;
+                let msg = weatherResult.state ? `Погода изменилась ${ icon ? icon : ''} 
+<b>( ${ weatherResult.state } )</b>
+<b>${weatherResult.title}</b>
+<b>${weatherResult.description}</b>`: null;
 
                 weatherResult.units.forEach((unit, idx) => {
-                    let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}<p>${unit.title}</p><p>${unit.description}</p>`;
+                    let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}
+<b>${unit.title}</b>
+<b>${unit.description}</b>`;
                     setTimeout(() => sendMessage(msg), (idx * 1000));
                     // setTimeout(() => sendMessage(unit.getAddressMapString()), (idx * 1000));
-                    // setTimeout(() => sendPhoto(unit.getPositionImg()), (idx * 1000));
+                    setTimeout(() => sendPhoto(unit.getPositionImg()), (idx * 1000));
                 });
 
                 if(msg) sendMessage(msg);
@@ -236,7 +242,7 @@ function initHandlers(): void {
             if(weatherResult.units.length){
                 setTimeout(() => {
                     sendMessage('Взгляните на обновленную карту HG24');
-                    UnitController.getAllUnits().then(url => sendPhoto(url));
+                    UnitController.getAllUnits().then(url => url ? sendPhoto(url) : sendMessage('Слишком много монстров, чтобы посмотреть карту посетите сайт игры'));
                 },10000)
             }
         }

@@ -23,7 +23,7 @@ export class Unit {
     }
 
     getPositionImg(): string {
-        return `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/pin-l-danger+900(${this.lng},${this.lat})/${this.lng},${this.lat},13/800x600?access_token=${mapbox_token}`;
+        return `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/pin-l-danger+900(${this.lng},${this.lat})/${this.lng},${this.lat},12/800x600?access_token=${mapbox_token}`;
     }
 
     getAddressMapString(): string {
@@ -133,6 +133,7 @@ export class UnitController {
             .then(json => {
             // console.log('active Units Result:', json);
 
+            if (json.length > 20) return null;
             json = (json as {lat: string, lng: string}[]).filter(unit => unit.lat && unit.lng).map(unit => ([+unit.lng, +unit.lat]));
 
             return this.getSummaryUnitsMapImgURL(this.geoJSONPointsGenerator(json)); 
