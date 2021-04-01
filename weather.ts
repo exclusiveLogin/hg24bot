@@ -223,6 +223,14 @@ export class YandexWeather {
       newSpawnCountBlinker = 2;
     }
 
+    const units = [];
+
+    if (newSpawnCountBlinker) {
+      for(let i = 0; i < newSpawnCountBlinker; i++){
+        units.push(UnitController.createRandomUnit());
+      }
+    }
+
     if (this.currentState !== this.prevState) {
 
       if (this.currentState === 'clear' && !this.lock) {
@@ -233,15 +241,9 @@ export class YandexWeather {
         state: this.currentState,
         description: this.currentStateDescription,
         title: this.currentStateTitle,
-        units: []
+        units,
       };
-
-      if (newSpawnCountBlinker) {
-        for(let i = 0; i < newSpawnCountBlinker; i++){
-          data.units.push(UnitController.createRandomUnit());
-        }
-      }
-    
+      
       this.stream$.next(data);
       this.prevState = this.currentState;
     }
