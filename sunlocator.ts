@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import moment from 'moment';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Unit, UnitController } from './unit';
 
 export interface SunData{
@@ -227,8 +227,8 @@ class SunLocator{
 
     }
 
-    getStream(){
-        return this.stream$;
+    getStream(): Observable<SunData> {
+        return this.stream$.pipe();
     }
 
     fetchSunData(){

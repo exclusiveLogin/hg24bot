@@ -155,7 +155,7 @@ function initHandlers(): void {
             sendMessage( msg );
         
             sunState.units.forEach((unit, idx) => {
-                let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}`;
+                let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}<p>${unit.title}</p><p>${unit.description}</p>`;
                 setTimeout(() => sendMessage(msg), (idx * 1000));
                 // setTimeout(() => sendMessage(unit.getAddressMapString()), (idx * 1000));
                 // setTimeout(() => sendPhoto(unit.getPositionImg()), (idx * 1000));
@@ -224,7 +224,7 @@ function initHandlers(): void {
 <p>${weatherResult.description}</p>`: null;
 
                 weatherResult.units.forEach((unit, idx) => {
-                    let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}`;
+                    let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}<p>${unit.title}</p><p>${unit.description}</p>`;
                     setTimeout(() => sendMessage(msg), (idx * 1000));
                     // setTimeout(() => sendMessage(unit.getAddressMapString()), (idx * 1000));
                     // setTimeout(() => sendPhoto(unit.getPositionImg()), (idx * 1000));

@@ -15,7 +15,7 @@ export class Unit {
     level = 0;
     class = 'blinker';
 
-    constructor(lat: number, lng: number, title: string = 'Blinker', description: string = 'Статичный дух рандомного спауна'){
+    constructor(lat: number, lng: number, title: string = 'unknown', description: string = '...'){
         this.lat = lat;
         this.lng = lng;
         this.title = title;
@@ -39,9 +39,12 @@ export class Unit {
 export class UnitController {
     
     static createRandomUnit(): Unit {
+        const idx = this.getRandomInt(MONSTERS.length) - 1;
+        const monster = MONSTERS[idx];
+
         const position = this.getRandomPosition();
-        this.addUnitData(...position);
-        return new Unit(...position);
+        this.addUnitData(...position, monster.title, monster.description);
+        return new Unit(...position, monster.title, monster.description);
     }
  
     static getRandomPosition(): [number, number] {
@@ -96,16 +99,12 @@ export class UnitController {
         return Math.floor(Math.random() * max);
     }
 
-    static addUnitData(lat: number, lon: number): void {
-
-        const idx = this.getRandomInt(MONSTERS.length) - 1;
-
-        const monster = MONSTERS[idx];
+    static addUnitData(lat: number, lon: number, title: string, description: string): void {
 
         const body = {
           mode: "add_unit",
-          name: monster.title,
-          description: monster.description,
+          name: title,
+          description,
           lat: lat.toString(),
           lng: lon.toString(),
         };
