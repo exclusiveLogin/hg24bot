@@ -113,6 +113,9 @@ export class YandexWeather {
   }
 
   calcCurrentState(condition) {
+
+    console.log('calcCurrentState...', condition, ' old: ', this.currentState);
+
     this.currentState = condition;
     let newSpawnCountBlinker = 0;
   
@@ -243,7 +246,7 @@ export class YandexWeather {
         title: this.currentStateTitle,
         units,
       };
-      
+
       this.stream$.next(data);
       this.prevState = this.currentState;
     }

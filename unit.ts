@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { MONSTERS } from './monsters_repo';
 
 const mapbox_token = 'pk.eyJ1IjoiZXhjbHVzaXZlbG9naW4iLCJhIjoiY2p2d2R0eDlxMXRldTRhbXM2dHAzdzhhdCJ9.w_mBqjrTK6ycIB0OViaw_g';
 
@@ -91,11 +92,20 @@ export class UnitController {
         return encodeURIComponent(JSON.stringify(pattern))
     }
 
+    static getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+    }
+
     static addUnitData(lat: number, lon: number): void {
+
+        const idx = this.getRandomInt(MONSTERS.length) - 1;
+
+        const monster = MONSTERS[idx];
+
         const body = {
           mode: "add_unit",
-          name: "blinker",
-          description: "Рандомный дух",
+          name: monster.title,
+          description: monster.description,
           lat: lat.toString(),
           lng: lon.toString(),
         };
