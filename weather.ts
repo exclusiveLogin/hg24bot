@@ -227,10 +227,18 @@ export class YandexWeather {
     }
 
     const units = [];
+    
+    let data: WeatherData = {
+      state: null,
+      description: this.currentStateDescription,
+      title: this.currentStateTitle,
+      units,
+    };
+    
 
     if (newSpawnCountBlinker) {
       for(let i = 0; i < newSpawnCountBlinker; i++){
-        units.push(UnitController.createRandomUnit());
+        data.units.push(UnitController.createRandomUnit());
       }
     }
 
@@ -240,17 +248,12 @@ export class YandexWeather {
         UnitController.removeAllUnits();
       }
 
-      let data: WeatherData = {
-        state: this.currentState,
-        description: this.currentStateDescription,
-        title: this.currentStateTitle,
-        units,
-      };
-
-      this.stream$.next(data);
+      data.state = this.currentState;
+      
       this.prevState = this.currentState;
     }
 
+    this.stream$.next(data);
   }
 
   getStream() {

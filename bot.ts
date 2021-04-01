@@ -219,9 +219,9 @@ function initHandlers(): void {
             //console.log('icon:', icon, weatherResult.state);
 
             setTimeout(() => {
-                let msg = `Погода изменилась ${ icon ? icon : ''} <b>( ${ weatherResult.state } )</b>
-                            <strong>${weatherResult.title}</strong>
-                            ${weatherResult.description}`;
+                let msg = weatherResult.state ? `Погода изменилась ${ icon ? icon : ''} <b>( ${ weatherResult.state } )</b>
+<strong>${weatherResult.title}</strong>
+<p>${weatherResult.description}</p>`: null;
 
                 weatherResult.units.forEach((unit, idx) => {
                     let msg = `Новый спаун в точке: ${unit.getCoordinatesStr()}`;
@@ -230,7 +230,7 @@ function initHandlers(): void {
                     // setTimeout(() => sendPhoto(unit.getPositionImg()), (idx * 1000));
                 });
 
-                sendMessage(msg);
+                if(msg) sendMessage(msg);
             }, 2000);
 
             if(weatherResult.units.length){
