@@ -236,13 +236,15 @@ export class YandexWeather {
     };
     
 
-    if (newSpawnCountBlinker) {
-      for(let i = 0; i < newSpawnCountBlinker; i++){
-        data.units.push(UnitController.createRandomUnit());
-      }
-    }
+    
 
     if (this.currentState !== this.prevState) {
+
+      if (newSpawnCountBlinker) {
+        for(let i = 0; i < newSpawnCountBlinker; i++){
+          data.units.push(UnitController.createRandomUnit());
+        }
+      }
 
       if (this.currentState === 'clear' && !this.lock) {
         UnitController.removeAllUnits();

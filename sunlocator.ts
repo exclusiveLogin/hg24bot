@@ -175,7 +175,7 @@ class SunLocator{
         if( this.dayFlag ) {
             this.currentState = 'day';
             this.currentStateTitle = "День";
-            this.currentStateDescription = "Время относительно безопасное, если нет других условий";
+            this.currentStateDescription = "Время относительно безопасное, если нет других условий, блуждающие уничтожены";
         }
 
         if( this.goldHourMFlag ) {
