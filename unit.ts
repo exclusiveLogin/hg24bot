@@ -48,11 +48,11 @@ export class UnitController {
     }
  
     static getRandomPosition(): [number, number] {
-        const latMin = 53.05;
-        const latMax = 53.2;
+        const latMin = 52.944087;
+        const latMax = 53.386195;
     
-        const lngMin = 48.3;
-        const lngMax = 48.58;
+        const lngMin = 48.139172;
+        const lngMax = 48.770714;
     
         let lat = Math.random() * (latMax - latMin) + latMin;
         let lng = Math.random() * (lngMax - lngMin) + lngMin;
